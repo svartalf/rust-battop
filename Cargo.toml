@@ -1,0 +1,26 @@
+[package]
+name = "battop"
+version = "0.1.5"
+authors = ["svartalf <self@svartalf.info>"]
+edition = "2018"
+description = "CLI tool for batteries reports"
+repository = "https://github.com/svartalf/rust-battop"
+readme = "README.md"
+categories = ["os"]
+keywords = ["tui", "battery", "linux", "macos"]
+license = "Apache-2.0 OR MIT"
+exclude = ["assets"]
+
+[badges]
+travis-ci = { repository = "svartalf/rust-battop", branch = "master" }
+maintenance = { status = "actively-developed" }
+
+[dependencies]
+cfg-if = "0.1"
+
+[target.'cfg(not(windows))'.dependencies]
+battery = "0.7.0"
+humantime = "1.2.0"
+tui = "0.5.0"
+termion = "1.5.1"
+itertools = "0.8.0"
