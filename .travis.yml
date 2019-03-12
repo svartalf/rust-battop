@@ -1,0 +1,57 @@
+dist: trusty
+language: rust
+services: docker
+sudo: required
+
+matrix:
+    include:
+        # Linux
+        - name: i686-unknown-linux-gnu
+          env: TARGET=i686-unknown-linux-gnu    RUST_BACKTRACE=1
+        - name: x86_64-unknown-linux-gnu
+          env: TARGET=x86_64-unknown-linux-gnu  RUST_BACKTRACE=1
+
+        - name: i686-unknown-linux-musl
+          env: TARGET=i686-unknown-linux-musl   RUST_BACKTRACE=1
+        - name: x86_64-unknown-linux-musl
+          env: TARGET=x86_64-unknown-linux-musl RUST_BACKTRACE=1
+
+        # Mac OS
+        - name: i686-apple-darwin
+          env: TARGET=i686-apple-darwin         RUST_BACKTRACE=1
+          os: osx
+        - name: x86_64-apple-darwin
+          env: TARGET=x86_64-apple-darwin       RUST_BACKTRACE=1
+          os: osx
+
+        # Windows
+        - name: i686-pc-windows-gnu
+          env: TARGET=i686-pc-windows-gnu       RUST_BACKTRACE=1
+        - name: x86_64-pc-windows-gnu
+          env: TARGET=x86_64-pc-windows-gnu     RUST_BACKTRACE=1
+
+        # FreeBSD
+        - name: i686-unknown-freebsd
+          env: TARGET=i686-unknown-freebsd      RUST_BACKTRACE=1
+        - name: x86_64-unknown-freebsd
+          env: TARGET=x86_64-unknown-freebsd    RUST_BACKTRACE=1
+        # `std` component is not available for this target yet
+        # - name: x86_64-unknown-dragonfly
+        #   env: TARGET=x86_64-unknown-dragonfly  RUST_BACKTRACE=1
+
+cache:
+    - cargo
+before_cache:
+    - chmod -R a+r ${HOME}/.cargo
+
+before_install:
+    - cargo install --force cross
+    - rustup component add clippy
+
+script:
+    - cross build --target=${TARGET}
+    - cross clippy --target=${TARGET} -- -D warnings
+
+notifications:
+  email:
+    on_success: never
