@@ -1,9 +1,10 @@
 [package]
 name = "battop"
-version = "0.1.5"
+version = "0.2.0"
 authors = ["svartalf <self@svartalf.info>"]
 edition = "2018"
-description = "CLI tool for batteries reports"
+description = "Interactive batteries viewer"
+homepage = "https://github.com/svartalf/rust-battop"
 repository = "https://github.com/svartalf/rust-battop"
 readme = "README.md"
 categories = ["os"]
@@ -16,11 +17,11 @@ travis-ci = { repository = "svartalf/rust-battop", branch = "master" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-cfg-if = "0.1"
-
-[target.'cfg(not(windows))'.dependencies]
 battery = "0.7.0"
-humantime = "1.2.0"
+structopt = { version = "0.2", default-features = false }
+log = "0.4.6"
+stderrlog = "0.4.1"
 tui = "0.5.0"
 termion = "1.5.1"
 itertools = "0.8.0"
+humantime = "1.2.0"

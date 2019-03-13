@@ -24,11 +24,11 @@ matrix:
           env: TARGET=x86_64-apple-darwin       RUST_BACKTRACE=1
           os: osx
 
-        # Windows
-        - name: i686-pc-windows-gnu
-          env: TARGET=i686-pc-windows-gnu       RUST_BACKTRACE=1
-        - name: x86_64-pc-windows-gnu
-          env: TARGET=x86_64-pc-windows-gnu     RUST_BACKTRACE=1
+        # Windows (is not supported yet)
+        # - name: i686-pc-windows-gnu
+        #   env: TARGET=i686-pc-windows-gnu       RUST_BACKTRACE=1
+        # - name: x86_64-pc-windows-gnu
+        #   env: TARGET=x86_64-pc-windows-gnu     RUST_BACKTRACE=1
 
         # FreeBSD
         - name: i686-unknown-freebsd
