@@ -143,17 +143,18 @@ impl<'i> Painter<'i> {
 
     pub fn draw_state_of_charge_bar<B: Backend>(&self, frame: &mut Frame<B>, area: Rect) {
         let value = f64::from(self.view.battery().state_of_charge().get::<ratio>());
+        let value_label = f64::from(self.view.battery().state_of_charge().get::<percent>());
         let block = Block::default().title("State of charge").borders(Borders::ALL);
         let color = match () {
-            _ if value > 30.0 => Color::Green,
-            _ if value > 15.0 => Color::Yellow,
+            _ if value > 0.3 => Color::Green,
+            _ if value > 0.15 => Color::Yellow,
             _ => Color::Red,
         };
         Gauge::default()
             .block(block)
-            .ratio(value / 100.0)
+            .ratio(value)
             .style(Style::default().fg(color))
-            .label(&format!("{:.2} %", value))
+            .label(&format!("{:.2} %", value_label))
             .render(frame, area);
     }
 
