@@ -3,6 +3,9 @@ language: rust
 services: docker
 sudo: required
 
+git:
+  submodules: false
+
 matrix:
     include:
         # Linux
