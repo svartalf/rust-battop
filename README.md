@@ -18,6 +18,14 @@ but about batteries installed in your notebook.
 
 ## Installation
 
+### Arch linux
+
+Install package from [AUR](https://aur.archlinux.org/packages/battop/) with your favorite AUR helper:
+
+```
+$ yay -S battop
+```
+
 ### From sources
 
 Clone the repo and run
