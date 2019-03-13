@@ -143,15 +143,23 @@ impl ChartData {
     }
 
     fn y_lower(&self) -> f64 {
-        let mut value = (self.value_min - 1.0).floor();
-        if value < 0.0 {
-            value = -1.0;
+        if self.enabled {
+            let mut value = (self.value_min - 1.0).floor();
+            if value < 0.0 {
+                value = -1.0;
+            }
+            value
+        } else {
+            0.0
         }
-        value
     }
 
     fn y_upper(&self) -> f64 {
-        (self.value_max + 1.0).ceil()
+        if self.enabled {
+            (self.value_max + 1.0).ceil()
+        } else {
+            0.0
+        }
     }
 
     pub fn y_labels(&self) -> Vec<String> {

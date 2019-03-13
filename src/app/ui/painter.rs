@@ -45,7 +45,7 @@ use tui::Frame;
 use battery::units::electric_potential::volt;
 use battery::units::energy::{joule, watt_hour};
 use battery::units::power::watt;
-use battery::units::ratio::percent;
+use battery::units::ratio::{ratio, percent};
 use battery::units::thermodynamic_temperature::{degree_celsius, kelvin};
 use battery::units::time::second;
 use battery::units::Unit;
@@ -142,7 +142,7 @@ impl<'i> Painter<'i> {
     }
 
     pub fn draw_state_of_charge_bar<B: Backend>(&self, frame: &mut Frame<B>, area: Rect) {
-        let value = f64::from(self.view.battery().state_of_charge().get::<percent>());
+        let value = f64::from(self.view.battery().state_of_charge().get::<ratio>());
         let block = Block::default().title("State of charge").borders(Borders::ALL);
         let color = match () {
             _ if value > 30.0 => Color::Green,
@@ -161,7 +161,7 @@ impl<'i> Painter<'i> {
         let block = Block::default().title(data.title()).borders(Borders::ALL);
         let value = data.current();
         // tui automatically hides chart legend if it's height is higher than `chart.height / 3`.
-        // Since we have 4 charts already, legend will be invisible for most monitors,
+        // Since we have 3 charts already, legend will be invisible for most monitors,
         // so instead writing value as a X axis label
         let x_axis: Axis<String> = Axis::default()
             .title(&value)
