@@ -1,6 +1,6 @@
 [package]
 name = "battop"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["svartalf <self@svartalf.info>"]
 edition = "2018"
 description = "Interactive batteries viewer"
