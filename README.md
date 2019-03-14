@@ -41,3 +41,7 @@ Prebuilt binaries for Linux, FreeBSD and MacOS can be downloaded from the [GitHu
 ## License
 
 `battop` is double-released under the Apache License, Version 2.0 or the MIT License.
+
+## Donations
+
+If you appreciate my work and want to support me, you can do it [here](https://svartalf.info/donate/)
