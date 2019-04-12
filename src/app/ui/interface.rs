@@ -1,11 +1,7 @@
-use std::io;
 use std::rc::Rc;
 use std::sync::Arc;
 
-use termion::input::MouseTerminal;
-use termion::raw::IntoRawMode;
-use termion::screen::AlternateScreen;
-use tui::backend::{Backend, TermionBackend};
+use tui::backend::{Backend, CrosstermBackend};
 use tui::Terminal;
 
 use super::{Context, Painter, TabBar, View};
@@ -16,10 +12,9 @@ use crate::Result;
 pub fn init(config: Arc<Config>, views: Vec<View>) -> Result<Interface<impl Backend>> {
     debug_assert!(!views.is_empty());
 
-    let stdout = io::stdout().into_raw_mode()?;
-    let stdout = MouseTerminal::from(stdout);
-    let stdout = AlternateScreen::from(stdout);
-    let backend = TermionBackend::new(stdout);
+    let alternate_screen = crossterm::AlternateScreen::to_alternate(true)?;
+    let backend = CrosstermBackend::with_alternate_screen(alternate_screen)?;
+
     let mut terminal = Terminal::new(backend)?;
     terminal.hide_cursor()?;
 

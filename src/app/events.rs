@@ -1,9 +1,7 @@
-use std::io;
 use std::sync::mpsc;
 use std::thread;
 
-use termion::event::Key;
-use termion::input::TermRead;
+use crossterm::{input, InputEvent, KeyEvent};
 
 use crate::app::Config;
 use crate::Result;
@@ -31,31 +29,29 @@ impl EventHandler {
         let input_handle = {
             let tx = tx.clone();
             thread::spawn(move || {
-                let stdin = io::stdin();
+                let stdin = input();
                 trace!("Input thread spawned");
-                for possible_key in stdin.keys() {
-                    if let Ok(key) = possible_key {
-                        let event = match key {
-                            Key::Left => Event::PreviousTab,
-                            Key::Right => Event::NextTab,
-                            Key::Char('q') => Event::Exit,
-                            Key::Ctrl('c') => Event::Exit,
-                            Key::Esc => Event::Exit,
-                            _ => continue,
-                        };
-                        let is_exit = event == Event::Exit;
+                for key in stdin.read_sync() {
+                    let event = match key {
+                        InputEvent::Keyboard(KeyEvent::Left) => Event::PreviousTab,
+                        InputEvent::Keyboard(KeyEvent::Right) => Event::NextTab,
+                        InputEvent::Keyboard(KeyEvent::Char('q')) => Event::Exit,
+                        InputEvent::Keyboard(KeyEvent::Ctrl('c')) => Event::Exit,
+                        InputEvent::Keyboard(KeyEvent::Esc) => Event::Exit,
+                        _ => continue,
+                    };
+                    let is_exit = event == Event::Exit;
 
-                        if let Err(e) = tx.send(event) {
-                            // Now that's just terrible thing to do with poor thread :(
-                            warn!("Input thread failed to send event and will be terminated: {:?}", e);
-                            return;
-                        }
+                    if let Err(e) = tx.send(event) {
+                        // Now that's just terrible thing to do with poor thread :(
+                        warn!("Input thread failed to send event and will be terminated: {:?}", e);
+                        return;
+                    }
 
-                        // User had requested an exit, closing this thread too
-                        if is_exit {
-                            trace!("Input thread just sent the Exit event and going to terminate now");
-                            return;
-                        }
+                    // User had requested an exit, closing this thread too
+                    if is_exit {
+                        trace!("Input thread just sent the Exit event and going to terminate now");
+                        return;
                     }
                 }
             })
