@@ -19,9 +19,9 @@ maintenance = { status = "actively-developed" }
 [dependencies]
 battery = { version = "0.7.1", git = "https://github.com/svartalf/rust-battery.git" }
 structopt = { version = "0.2", default-features = false }
-log = "0.4.6"
-stderrlog = "0.4.1"
-tui = { git = "https://github.com/TimonPost/tui-rs.git", branch = "crossterm" }
-crossterm = { git = "https://github.com/TimonPost/crossterm", branch = "fixes" }
+log = "0.4"
+stderrlog = "0.4"
+tui = { git = "https://github.com/fdehau/tui-rs.git", features = ["crossterm"] }
+crossterm = "0.9.4"
 itertools = "0.8.0"
 humantime = "1.2.0"
