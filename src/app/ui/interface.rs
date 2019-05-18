@@ -12,11 +12,11 @@ use crate::Result;
 pub fn init(config: Arc<Config>, views: Vec<View>) -> Result<Interface<impl Backend>> {
     debug_assert!(!views.is_empty());
 
-    let alternate_screen = crossterm::AlternateScreen::to_alternate(true)?;
-    let backend = CrosstermBackend::with_alternate_screen(alternate_screen)?;
-
+    let screen = crossterm::RawScreen::into_raw_mode()?;
+    let backend = CrosstermBackend::new();
     let mut terminal = Terminal::new(backend)?;
     terminal.hide_cursor()?;
+    terminal.clear()?;
 
     let tab_titles = views.iter().map(|view| view.title()).collect::<Vec<_>>();
     let tabs = TabBar::new(tab_titles);
@@ -26,16 +26,19 @@ pub fn init(config: Arc<Config>, views: Vec<View>) -> Result<Interface<impl Back
         terminal,
         views,
         tabs,
+        screen,
     })
 }
 
 /// Interface is a group tabs and tab contents
-#[derive(Debug)]
 pub struct Interface<B: Backend> {
+    #[allow(unused)]
     config: Arc<Config>,
     terminal: Terminal<B>,
     views: Vec<View>,
     tabs: TabBar,
+    #[allow(unused)]
+    screen: crossterm::RawScreen,
 }
 
 impl<B: Backend> Interface<B> {
@@ -57,5 +60,12 @@ impl<B: Backend> Interface<B> {
 
     pub fn tabs_mut(&mut self) -> &mut TabBar {
         &mut self.tabs
+    }
+}
+
+impl<B: Backend> Drop for Interface<B> {
+    fn drop(&mut self) {
+        let _ = self.terminal.show_cursor();
+        let _ = self.terminal.clear();
     }
 }

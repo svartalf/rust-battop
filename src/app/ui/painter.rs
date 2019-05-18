@@ -1,4 +1,3 @@
-use std::ops::Deref;
 /// Layout schema:
 ///
 /// ```
@@ -35,6 +34,7 @@ use std::ops::Deref;
 /// ```
 use std::rc::Rc;
 use std::time::Duration;
+use std::ops::Deref;
 
 use tui::backend::Backend;
 use tui::layout::{Constraint, Direction, Layout, Rect};

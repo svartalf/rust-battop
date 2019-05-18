@@ -22,6 +22,6 @@ structopt = { version = "0.2", default-features = false }
 log = "0.4"
 stderrlog = "0.4"
 tui = { git = "https://github.com/fdehau/tui-rs.git", default-features = false, features = ["crossterm"] }
-crossterm = "0.9.4"
+crossterm = "^0.9"
 itertools = "0.8.0"
 humantime = "1.2.0"
