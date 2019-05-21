@@ -26,8 +26,10 @@ pub fn init(config: Arc<Config>) -> Result<Application<impl Backend>> {
         trace!("Found {} batteries during initialization", batteries.len());
     }
 
-    let events = EventHandler::from_config(&config);
+    // Interface should be initialized before the events handler,
+    // since it switches terminal into a proper mode
     let interface = ui::init(config.clone(), batteries)?;
+    let events = EventHandler::from_config(&config);
 
     Ok(Application {
         manager,
