@@ -2,7 +2,7 @@
 
 [![Latest Version](https://img.shields.io/crates/v/battop.svg)](https://crates.io/crates/battop)
 [![Build Status](https://travis-ci.org/svartalf/rust-battop.svg?branch=master)](https://travis-ci.org/svartalf/rust-battop)
-[![dependency status](https://deps.rs/crate/battop/0.2.1/status.svg)](https://deps.rs/crate/battop/0.2.1)
+[![dependency status](https://deps.rs/crate/battop/0.2.2/status.svg)](https://deps.rs/crate/battop/0.2.2)
 ![Apache 2.0 OR MIT licensed](https://img.shields.io/badge/license-Apache2.0%2FMIT-blue.svg)
 
 `battop` is an interactive viewer, similar to `top`, `htop` and other *top utilities,
