@@ -2,11 +2,11 @@
 
 [![Latest Version](https://img.shields.io/crates/v/battop.svg)](https://crates.io/crates/battop)
 [![Build Status](https://travis-ci.org/svartalf/rust-battop.svg?branch=master)](https://travis-ci.org/svartalf/rust-battop)
-[![dependency status](https://deps.rs/crate/battop/0.2.2/status.svg)](https://deps.rs/crate/battop/0.2.2)
+[![dependency status](https://deps.rs/crate/battop/0.2.4/status.svg)](https://deps.rs/crate/battop/0.2.4)
 ![Apache 2.0 OR MIT licensed](https://img.shields.io/badge/license-Apache2.0%2FMIT-blue.svg)
 
 `battop` is an interactive viewer, similar to `top`, `htop` and other *top utilities,
-but about batteries installed in your notebook.
+but about the batteries installed in your notebook.
 
 ![Screenshot](https://raw.githubusercontent.com/svartalf/rust-battop/master/assets/screenshot.png)
 
@@ -14,8 +14,13 @@ but about batteries installed in your notebook.
 
  * Cross-platform (Linux, MacOS, FreeBSD and DragonflyBSD are supported and Windows is [on the way](https://github.com/svartalf/rust-battop/issues/5))
  * Supports multiple batteries in case your notebook have them 
- * Backed by a [battery](https://crates.io/crates/battery) crate
  * It is free
+ * Usually it just works!
+
+`battop` is backed by a Rust crate [battery](https://crates.io/crates/battery)
+which provides unified cross-platform information about system batteries.\
+[Check it out](https://github.com/svartalf/rust-battery),
+if you want to gather the same information for your application!
 
 ## Installation
 
