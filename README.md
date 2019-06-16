@@ -6,15 +6,23 @@
 ![Apache 2.0 OR MIT licensed](https://img.shields.io/badge/license-Apache2.0%2FMIT-blue.svg)
 
 `battop` is an interactive viewer, similar to `top`, `htop` and other *top utilities,
-but about batteries installed in your notebook.
+but about the batteries installed in your notebook.
 
 ## Example
 
 ![Screenshot](https://raw.githubusercontent.com/svartalf/rust-battop/master/assets/screenshot.png)
 
-## Compatibility
+## Features
 
-`battop` supports *nix systems, MacOS and Windows.
+ * Cross-platform (Linux, MacOS, Windows, FreeBSD and DragonflyBSD)
+ * Supports multiple batteries in case your notebook have them 
+ * It is free
+ * Usually it just works!
+
+`battop` is backed by a Rust crate [battery](https://crates.io/crates/battery)
+which provides unified cross-platform information about system batteries.\
+[Check it out](https://github.com/svartalf/rust-battery),
+if you want to gather the same information for your application!
 
 ## Installation
 
@@ -36,7 +44,15 @@ $ cargo build --release
 
 ### Other
 
-Prebuilt binaries for Linux, FreeBSD, MacOS and Windows can be downloaded from the [GitHub releases page](https://github.com/svartalf/rust-battop/releases).
+Prebuilt binaries for Linux, macOS, Windows and FreeBSD can be downloaded from the [GitHub releases page](https://github.com/svartalf/rust-battop/releases).
+
+## Usage
+
+Simply running the `battop` command in your terminal should do the thing.
+
+Left and right arrows can be used to switch between different system batteries (if available).
+
+Run the `battop -h` command to see the additional available options.
 
 ## License
 

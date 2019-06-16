@@ -8,8 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Windows support landed
 
+## [0.2.4] - 2019-06-04
 ### Changed
-- `termion` backend was replaced with a `crossterm`
+
+- `battery` dependency version was updated to `0.7.4` (fixes [#8](https://github.com/svartalf/rust-battop/issues/8))
+
+## [0.2.3] - 2019-05-30
+### Changed
+
+- `battery` dependency version was updated to `0.7.3` (fixes [#7](https://github.com/svartalf/rust-battop/issues/7))
+
+## [0.2.2] - 2019-05-21
+### Changed
+
+- `battery` dependency version was updated to `0.7.2`
 
 ## [0.2.1] - 2019-03-13
 ### Fixed
