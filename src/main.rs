@@ -25,6 +25,7 @@ fn main() -> Result<()> {
 
     match app.run() {
         Err(Error::UserExit) => {
+            app.stop()?;
             trace!("Exit was requested by user, terminating");
             Ok(())
         }

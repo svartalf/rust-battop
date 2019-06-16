@@ -14,6 +14,7 @@ pub fn init(config: Arc<Config>) -> Result<Application<impl Backend>> {
     // This vec will be used for UI data pre-population before the first tick
     let batteries = manager
         .batteries()?
+        // TODO: Log any fetch errors
         .flatten()
         .map(|battery| ui::View::new(config.clone(), battery))
         .collect::<Vec<_>>();
@@ -52,6 +53,12 @@ impl<B: Backend> Application<B> {
             self.interface.draw()?;
             self.handle_event()?;
         }
+    }
+
+    pub fn stop(&mut self) -> Result<()> {
+        self.interface.close()?;
+
+        Ok(())
     }
 
     fn handle_event(&mut self) -> Result<()> {

@@ -8,7 +8,7 @@ use super::{Context, Painter, TabBar, View};
 use crate::app::Config;
 use crate::Result;
 
-#[allow(clippy::redundant_closure)]
+//#[allow(clippy::redundant_closure)]
 pub fn init(config: Arc<Config>, views: Vec<View>) -> Result<Interface<impl Backend>> {
     debug_assert!(!views.is_empty());
 
@@ -58,11 +58,17 @@ impl<B: Backend> Interface<B> {
     pub fn tabs_mut(&mut self) -> &mut TabBar {
         &mut self.tabs
     }
+
+    pub fn close(&mut self) -> Result<()> {
+        self.terminal.show_cursor()?;
+        self.terminal.clear()?;
+
+        Ok(())
+    }
 }
 
 impl<B: Backend> Drop for Interface<B> {
     fn drop(&mut self) {
-        let _ = self.terminal.show_cursor();
-        let _ = self.terminal.clear();
+        self.close().unwrap();
     }
 }
