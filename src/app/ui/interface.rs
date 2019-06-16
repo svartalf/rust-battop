@@ -12,8 +12,8 @@ use crate::Result;
 pub fn init(config: Arc<Config>, views: Vec<View>) -> Result<Interface<impl Backend>> {
     debug_assert!(!views.is_empty());
 
-    let screen = crossterm::RawScreen::into_raw_mode()?;
-    let backend = CrosstermBackend::new();
+    let screen = crossterm::AlternateScreen::to_alternate(true)?;
+    let backend = CrosstermBackend::with_alternate_screen(screen)?;
     let mut terminal = Terminal::new(backend)?;
     terminal.hide_cursor()?;
     terminal.clear()?;
@@ -26,7 +26,6 @@ pub fn init(config: Arc<Config>, views: Vec<View>) -> Result<Interface<impl Back
         terminal,
         views,
         tabs,
-        screen,
     })
 }
 
@@ -37,8 +36,6 @@ pub struct Interface<B: Backend> {
     terminal: Terminal<B>,
     views: Vec<View>,
     tabs: TabBar,
-    #[allow(unused)]
-    screen: crossterm::RawScreen,
 }
 
 impl<B: Backend> Interface<B> {
