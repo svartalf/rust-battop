@@ -137,7 +137,7 @@ impl<'i> Painter<'i> {
             .titles(self.tabs.titles())
             .select(self.tabs.index())
             .style(Style::default().fg(Color::Cyan))
-            .highlight_style(Style::default().fg(Color::Yellow))
+            .highlight_style(Style::default().fg(Color::White))
             .render(frame, area);
     }
 
@@ -153,7 +153,7 @@ impl<'i> Painter<'i> {
         Gauge::default()
             .block(block)
             .ratio(value)
-            .style(Style::default().fg(color))
+            .style(Style::default().bg(Color::Black).fg(color))
             .label(&format!("{:.2} %", value_label))
             .render(frame, area);
     }
@@ -166,7 +166,7 @@ impl<'i> Painter<'i> {
         // so instead writing value as a X axis label
         let x_axis: Axis<String> = Axis::default()
             .title(&value)
-            .style(Style::default().fg(Color::Yellow))
+            .style(Style::default().fg(Color::Reset))
             .bounds(data.x_bounds());
         let y_labels = data.y_labels();
         let y_axis: Axis<String> = Axis::default()
@@ -180,7 +180,7 @@ impl<'i> Painter<'i> {
             .y_axis(y_axis)
             .datasets(&[Dataset::default()
                 .marker(Marker::Braille)
-                .style(Style::default().fg(Color::Cyan))
+                .style(Style::default().fg(Color::Green))
                 .data(data.points())])
             .render(frame, area)
     }
