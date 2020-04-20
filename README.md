@@ -24,6 +24,8 @@ if you want to gather the same information for your application!
 
 ## Installation
 
+[![Packaging status](https://repology.org/badge/vertical-allrepos/battop.svg)](https://repology.org/project/battop/versions)
+
 ### Arch linux
 
 Install package from [AUR](https://aur.archlinux.org/packages/battop/) with your favorite AUR helper:
