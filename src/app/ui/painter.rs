@@ -45,7 +45,7 @@ use tui::Frame;
 use battery::units::electric_potential::volt;
 use battery::units::energy::{joule, watt_hour};
 use battery::units::power::watt;
-use battery::units::ratio::{ratio, percent};
+use battery::units::ratio::{percent, ratio};
 use battery::units::thermodynamic_temperature::{degree_celsius, kelvin};
 use battery::units::time::second;
 use battery::units::Unit;

@@ -1,7 +1,8 @@
 # battop
 
 [![Latest Version](https://img.shields.io/crates/v/battop.svg)](https://crates.io/crates/battop)
-[![Build Status](https://travis-ci.org/svartalf/rust-battop.svg?branch=master)](https://travis-ci.org/svartalf/rust-battop)
+![Continuous integration](https://github.com/svartalf/rust-battop/workflows/Continuous%20integration/badge.svg)
+[![Packaging status](https://repology.org/badge/tiny-repos/battop.svg)](https://repology.org/project/battop/versions)
 [![dependency status](https://deps.rs/crate/battop/0.2.4/status.svg)](https://deps.rs/crate/battop/0.2.4)
 ![Apache 2.0 OR MIT licensed](https://img.shields.io/badge/license-Apache2.0%2FMIT-blue.svg)
 

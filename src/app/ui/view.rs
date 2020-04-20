@@ -23,7 +23,7 @@ impl View {
             battery,
             voltage: ChartData::new(config.clone(), ChartType::Voltage),
             energy_rate: ChartData::new(config.clone(), ChartType::EnergyRate),
-            temperature: ChartData::new(config.clone(), ChartType::Temperature),
+            temperature: ChartData::new(config, ChartType::Temperature),
         }
     }
 

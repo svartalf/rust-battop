@@ -65,7 +65,6 @@ impl EventHandler {
         // Application might update state and re-draw UI on that event
         let interval = *config.delay();
         let tick_handle = {
-            let tx = tx.clone();
             thread::spawn(move || {
                 let tx = tx.clone();
                 trace!("Tick thread is spawned with {:?} interval", interval);

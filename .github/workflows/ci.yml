@@ -21,6 +21,7 @@ jobs:
   clippy:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -33,7 +34,7 @@ jobs:
           args: -- -D warnings
 
   check:
-    name: ${{ matrix.triple.os }} / ${{ matrix.triple.toolchain }}
+    name: ${{ matrix.triple.os }} / ${{ matrix.toolchain }}
     needs: [rustfmt, clippy]
     runs-on: ${{ matrix.triple.os }}
     strategy:
@@ -42,10 +43,11 @@ jobs:
         triple:
           - { os: 'ubuntu-latest',  target: 'x86_64-unknown-linux-gnu', cross: false }
           - { os: 'ubuntu-latest',  target: 'i686-unknown-linux-gnu',   cross: true }
+
           - { os: 'macOS-latest',   target: 'x86_64-apple-darwin',      cross: false }
-          # TODO: cross does not support it
-          # - { os: 'windows-latest', target: 'i686-pc-windows-msvc',     cross: true }
-          - { os: 'windows-latest', target: 'x86_64-pc-windows-msvc',   cross: false }
+
+          # TODO:
+          # - { os: 'windows-latest', target: 'x86_64-pc-windows-msvc',   cross: false }
           # TODO: FreeBSD
         toolchain:
           - 1.32.0  # MSRV
