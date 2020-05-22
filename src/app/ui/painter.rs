@@ -32,15 +32,16 @@
 ///           \                                                                            /
 ///            \------------------ main window -------------------------------------------/
 /// ```
+use std::borrow::Cow;
 use std::mem;
 use std::ops::Deref;
 use std::rc::Rc;
 use std::time::Duration;
 
 use tui::backend::Backend;
-use tui::layout::{Constraint, Direction, Layout, Rect};
+use tui::layout::{Alignment, Constraint, Direction, Layout, Rect};
 use tui::style::{Color, Modifier, Style};
-use tui::widgets::{Axis, Block, Borders, Chart, Dataset, Gauge, Marker, Row, Table, Tabs, Widget};
+use tui::widgets::{Axis, Block, Borders, Chart, Dataset, Gauge, Marker, Paragraph, Row, Table, Tabs, Text, Widget};
 use tui::Frame;
 
 use battery::units::electric_potential::volt;
@@ -152,11 +153,20 @@ impl<'i> Painter<'i> {
     pub fn draw_state_of_charge_bar<B: Backend>(&self, frame: &mut Frame<B>, area: Rect) {
         let value = f64::from(self.view.battery().state_of_charge().get::<ratio>());
         let value_label = f64::from(self.view.battery().state_of_charge().get::<percent>());
-        let mut title = format!("State of charge: {:.2} %", value_label);
-        let block = Block::default()
+        let mut title = "Charge Percentage".to_string();
+
+        let gauge_block = Block::default()
             .title(self.format_section_title(&mut title))
             .title_style(self.get_section_title_style())
             .borders(Borders::ALL);
+        let text_block = Block::default().borders(Borders::ALL);
+
+        let chunks = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([Constraint::Min(0), Constraint::Length(("|100.00 %|".len()) as u16)].as_ref())
+            .split(area);
+
+        let (gauge_area, text_area) = (chunks[0], chunks[1]);
 
         let color = match () {
             _ if value > 0.3 => Color::Green,
@@ -164,11 +174,17 @@ impl<'i> Painter<'i> {
             _ => Color::Red,
         };
         Gauge::default()
-            .block(block)
+            .block(gauge_block)
             .ratio(value)
             .style(Style::default().bg(Color::Black).fg(color))
             .label(&"")
-            .render(frame, area);
+            .render(frame, gauge_area);
+
+        let text = Text::Raw(Cow::from(format!("{:.2} %\n", value_label)));
+        Paragraph::new([text].iter())
+            .block(text_block)
+            .alignment(Alignment::Right)
+            .render(frame, text_area);
     }
 
     pub fn draw_chart<B: Backend>(&self, data: &ChartData, frame: &mut Frame<B>, area: Rect) {
@@ -348,7 +364,7 @@ impl<'i> Painter<'i> {
 
         // create table
         Table::new(header.iter(), rows)
-            .header_style(Style::default().modifier(Modifier::UNDERLINED | Modifier::BOLD))
+            .header_style(Style::default().modifier(Modifier::UNDERLINED))
             .block(block)
             .widths(&[17, 17])
             .render(frame, area);
@@ -356,12 +372,12 @@ impl<'i> Painter<'i> {
 
     fn format_section_title<'a>(&self, title: &'a mut String) -> &'a String {
         // put formatted contents into title buffer
-        mem::swap(title, &mut format!("|{}|", &title));
+        mem::swap(title, &mut format!(" {} ", &title));
         title
     }
 
     fn get_section_title_style(&self) -> Style {
-        Style::default().modifier(Modifier::BOLD)
+        Style::default()
     }
 }
 
