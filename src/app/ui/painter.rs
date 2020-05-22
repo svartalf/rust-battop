@@ -38,7 +38,7 @@ use std::time::Duration;
 
 use tui::backend::Backend;
 use tui::layout::{Constraint, Direction, Layout, Rect};
-use tui::style::{Color, Style, Modifier};
+use tui::style::{Color, Modifier, Style};
 use tui::widgets::{Axis, Block, Borders, Chart, Dataset, Gauge, Marker, Row, Table, Tabs, Widget};
 use tui::Frame;
 
@@ -135,10 +135,12 @@ impl<'i> Painter<'i> {
         let mut title = String::from("Batteries");
 
         Tabs::default()
-            .block(Block::default()
-                .borders(Borders::ALL)
-                .title(self.format_section_title(&mut title))
-                .title_style(self.get_section_title_style()))
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .title(self.format_section_title(&mut title))
+                    .title_style(self.get_section_title_style()),
+            )
             .titles(self.tabs.titles())
             .select(self.tabs.index())
             .style(Style::default().fg(Color::Cyan))
@@ -299,10 +301,7 @@ impl<'i> Painter<'i> {
             None => "N/A".to_string(),
         };
 
-        let items = vec![
-            ["Time to full", time_to_full],
-            ["Time to empty", time_to_empty],
-        ];
+        let items = vec![["Time to full", time_to_full], ["Time to empty", time_to_empty]];
         let header = ["Time", ""];
 
         self.draw_info_table(header, &items, block, frame, area);
@@ -327,24 +326,34 @@ impl<'i> Painter<'i> {
         self.draw_info_table(header, &items, block, frame, area);
     }
 
-    fn draw_info_table<B: Backend>(&self, header: [&str; 2], items: &Vec<[&str; 2]>, block: Block, frame: &mut Frame<B>, area: Rect) {
+    fn draw_info_table<B: Backend>(
+        &self,
+        header: [&str; 2],
+        items: &[[&str; 2]],
+        block: Block,
+        frame: &mut Frame<B>,
+        area: Rect,
+    ) {
         // convert header and items to strings
-        let header = header.iter().map(|elem| {
-            elem.clone().to_string()
-        }).collect::<Vec<_>>();
-        let items = items.iter().map(|item| {
-            let mut item = [item[0].clone().to_string(), item[1].clone().to_string()];
-            item[0].push_str(":");
-            item
-        }).collect::<Vec<[String; 2]>>();
+        let header = header
+            .iter()
+            .map(|elem| <&str>::clone(elem).to_string())
+            .collect::<Vec<_>>();
+        let items = items
+            .iter()
+            .map(|item| {
+                let mut item = [<&str>::clone(&item[0]).to_string(), <&str>::clone(&item[1]).to_string()];
+                item[0].push_str(":");
+                item
+            })
+            .collect::<Vec<[String; 2]>>();
 
         // convert items to rows
         let rows = items.iter().map(|item| Row::Data(item.iter()));
 
         // create table
         Table::new(header.iter(), rows)
-            .header_style(Style::default()
-                .modifier(Modifier::UNDERLINED | Modifier::BOLD))
+            .header_style(Style::default().modifier(Modifier::UNDERLINED | Modifier::BOLD))
             .block(block)
             .widths(&[17, 17])
             .render(frame, area);
