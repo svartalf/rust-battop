@@ -1,4 +1,3 @@
-use std::ops::Deref;
 /// Layout schema:
 ///
 /// ```
@@ -33,6 +32,8 @@ use std::ops::Deref;
 ///           \                                                                            /
 ///            \------------------ main window -------------------------------------------/
 /// ```
+use std::mem;
+use std::ops::Deref;
 use std::rc::Rc;
 use std::time::Duration;
 
@@ -335,18 +336,12 @@ impl<'i> Painter<'i> {
         area: Rect,
     ) {
         // convert header and items to strings
-        let header = header
+        let header: Vec<String> = header.iter().cloned().map(|elem| elem.to_string()).collect();
+        let items: Vec<[String; 2]> = items
             .iter()
-            .map(|elem| <&str>::clone(elem).to_string())
-            .collect::<Vec<_>>();
-        let items = items
-            .iter()
-            .map(|item| {
-                let mut item = [<&str>::clone(&item[0]).to_string(), <&str>::clone(&item[1]).to_string()];
-                item[0].push_str(":");
-                item
-            })
-            .collect::<Vec<[String; 2]>>();
+            .cloned()
+            .map(|item| [item[0].to_string() + ":", item[1].to_string()])
+            .collect();
 
         // convert items to rows
         let rows = items.iter().map(|item| Row::Data(item.iter()));
@@ -360,9 +355,8 @@ impl<'i> Painter<'i> {
     }
 
     fn format_section_title<'a>(&self, title: &'a mut String) -> &'a String {
-        let unformatted_title = title.clone();
-        title.clear();
-        title.push_str(&format!("|{}|", unformatted_title));
+        // put formatted contents into title buffer
+        mem::swap(title, &mut format!("|{}|", &title));
         title
     }
 
