@@ -153,14 +153,16 @@ impl<'i> Painter<'i> {
     pub fn draw_state_of_charge_bar<B: Backend>(&self, frame: &mut Frame<B>, area: Rect) {
         let value = f64::from(self.view.battery().state_of_charge().get::<ratio>());
         let value_label = f64::from(self.view.battery().state_of_charge().get::<percent>());
-        let mut title = "Charge Percentage".to_string();
+        let mut title = "State of charge".to_string();
 
+        // create blocks for gauge and text
         let gauge_block = Block::default()
             .title(self.format_section_title(&mut title))
             .title_style(self.get_section_title_style())
-            .borders(Borders::ALL);
-        let text_block = Block::default().borders(Borders::ALL);
+            .borders(Borders::ALL & !Borders::RIGHT);
+        let text_block = Block::default().borders(Borders::ALL & !Borders::LEFT);
 
+        // allocate areas for blocks
         let chunks = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([Constraint::Min(0), Constraint::Length(("|100.00 %|".len()) as u16)].as_ref())
@@ -168,20 +170,34 @@ impl<'i> Painter<'i> {
 
         let (gauge_area, text_area) = (chunks[0], chunks[1]);
 
-        let color = match () {
+        // set text and gauge colors
+        let gauge_color = match () {
             _ if value > 0.3 => Color::Green,
             _ if value > 0.15 => Color::Yellow,
             _ => Color::Red,
         };
+        let text_color = match () {
+            _ if gauge_color == Color::Green => Color::White,
+            _ => gauge_color,
+        };
+
+        // create colored text with separator from gauge
+        let text = [
+            Text::Raw(Cow::from("┃")),
+            Text::Styled(
+                Cow::from(format!("{:>6.2} %\n", value_label)),
+                Style::default().fg(text_color),
+            ),
+        ];
+
+        // render components
         Gauge::default()
             .block(gauge_block)
             .ratio(value)
-            .style(Style::default().bg(Color::Black).fg(color))
+            .style(Style::default().bg(Color::Black).fg(gauge_color))
             .label(&"")
             .render(frame, gauge_area);
-
-        let text = Text::Raw(Cow::from(format!("{:.2} %\n", value_label)));
-        Paragraph::new([text].iter())
+        Paragraph::new(text.iter())
             .block(text_block)
             .alignment(Alignment::Right)
             .render(frame, text_area);
@@ -356,7 +372,7 @@ impl<'i> Painter<'i> {
         let items: Vec<[String; 2]> = items
             .iter()
             .cloned()
-            .map(|item| [item[0].to_string() + ":", item[1].to_string()])
+            .map(|item| [item[0].to_string(), item[1].to_string()])
             .collect();
 
         // convert items to rows
@@ -364,7 +380,7 @@ impl<'i> Painter<'i> {
 
         // create table
         Table::new(header.iter(), rows)
-            .header_style(Style::default().modifier(Modifier::UNDERLINED))
+            .header_style(Style::default().modifier(Modifier::BOLD))
             .block(block)
             .widths(&[17, 17])
             .render(frame, area);
