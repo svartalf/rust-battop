@@ -1,4 +1,3 @@
-use std::ops::Deref;
 /// Layout schema:
 ///
 /// ```
@@ -33,13 +32,16 @@ use std::ops::Deref;
 ///           \                                                                            /
 ///            \------------------ main window -------------------------------------------/
 /// ```
+use std::borrow::Cow;
+use std::mem;
+use std::ops::Deref;
 use std::rc::Rc;
 use std::time::Duration;
 
 use tui::backend::Backend;
-use tui::layout::{Constraint, Direction, Layout, Rect};
-use tui::style::{Color, Style};
-use tui::widgets::{Axis, Block, Borders, Chart, Dataset, Gauge, Marker, Row, Table, Tabs, Widget};
+use tui::layout::{Alignment, Constraint, Direction, Layout, Rect};
+use tui::style::{Color, Modifier, Style};
+use tui::widgets::{Axis, Block, Borders, Chart, Dataset, Gauge, Marker, Paragraph, Row, Table, Tabs, Text, Widget};
 use tui::Frame;
 
 use battery::units::electric_potential::volt;
@@ -132,8 +134,15 @@ impl<'i> Painter<'i> {
     }
 
     pub fn draw_tabs<B: Backend>(&self, frame: &mut Frame<B>, area: Rect) {
+        let mut title = String::from("Batteries");
+
         Tabs::default()
-            .block(Block::default().borders(Borders::ALL).title("Batteries"))
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .title(self.format_section_title(&mut title))
+                    .title_style(self.get_section_title_style()),
+            )
             .titles(self.tabs.titles())
             .select(self.tabs.index())
             .style(Style::default().fg(Color::Cyan))
@@ -144,22 +153,62 @@ impl<'i> Painter<'i> {
     pub fn draw_state_of_charge_bar<B: Backend>(&self, frame: &mut Frame<B>, area: Rect) {
         let value = f64::from(self.view.battery().state_of_charge().get::<ratio>());
         let value_label = f64::from(self.view.battery().state_of_charge().get::<percent>());
-        let block = Block::default().title("State of charge").borders(Borders::ALL);
-        let color = match () {
+        let mut title = "State of charge".to_string();
+
+        // create blocks for gauge and text
+        let gauge_block = Block::default()
+            .title(self.format_section_title(&mut title))
+            .title_style(self.get_section_title_style())
+            .borders(Borders::ALL & !Borders::RIGHT);
+        let text_block = Block::default().borders(Borders::ALL & !Borders::LEFT);
+
+        // allocate areas for blocks
+        let chunks = Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([Constraint::Min(0), Constraint::Length(("|100.00 %|".len()) as u16)].as_ref())
+            .split(area);
+
+        let (gauge_area, text_area) = (chunks[0], chunks[1]);
+
+        // set text and gauge colors
+        let gauge_color = match () {
             _ if value > 0.3 => Color::Green,
             _ if value > 0.15 => Color::Yellow,
             _ => Color::Red,
         };
+        let text_color = match () {
+            _ if gauge_color == Color::Green => Color::White,
+            _ => gauge_color,
+        };
+
+        // create colored text with separator from gauge
+        let text = [
+            Text::Raw(Cow::from("┃")),
+            Text::Styled(
+                Cow::from(format!("{:>6.2} %\n", value_label)),
+                Style::default().fg(text_color),
+            ),
+        ];
+
+        // render components
         Gauge::default()
-            .block(block)
+            .block(gauge_block)
             .ratio(value)
-            .style(Style::default().bg(Color::Black).fg(color))
-            .label(&format!("{:.2} %", value_label))
-            .render(frame, area);
+            .style(Style::default().bg(Color::Black).fg(gauge_color))
+            .label(&"")
+            .render(frame, gauge_area);
+        Paragraph::new(text.iter())
+            .block(text_block)
+            .alignment(Alignment::Right)
+            .render(frame, text_area);
     }
 
     pub fn draw_chart<B: Backend>(&self, data: &ChartData, frame: &mut Frame<B>, area: Rect) {
-        let block = Block::default().title(data.title()).borders(Borders::ALL);
+        let mut title = data.title().to_string();
+        let block = Block::default()
+            .title(self.format_section_title(&mut title))
+            .title_style(self.get_section_title_style())
+            .borders(Borders::ALL);
         let value = data.current();
         // tui automatically hides chart legend if it's height is higher than `chart.height / 3`.
         // Since we have 3 charts already, legend will be invisible for most monitors,
@@ -186,33 +235,30 @@ impl<'i> Painter<'i> {
     }
 
     fn draw_common_info<B: Backend>(&self, frame: &mut Frame<B>, area: Rect) {
+        let mut title = "Information".to_string();
         let block = Block::default()
-            .title("Information")
+            .title(self.format_section_title(&mut title))
+            .title_style(self.get_section_title_style())
             .borders(Borders::LEFT | Borders::TOP | Borders::RIGHT);
 
         let tech = &format!("{}", self.view.battery().technology());
         let state = &format!("{}", self.view.battery().state());
-        let cycles = match self.view.battery().cycle_count() {
+        let cycles = &match self.view.battery().cycle_count() {
             Some(cycles) => format!("{}", cycles),
             None => "N/A".to_string(),
         };
+
         let items = vec![
-            vec!["Vendor", self.view.battery().vendor().unwrap_or("N/A")],
-            vec!["Model", self.view.battery().model().unwrap_or("N/A")],
-            vec!["S/N", self.view.battery().serial_number().unwrap_or("N/A")],
-            vec!["Technology", tech],
-            vec!["Charge state", state],
-            vec!["Cycles count", &cycles],
+            ["Vendor", self.view.battery().vendor().unwrap_or("N/A")],
+            ["Model", self.view.battery().model().unwrap_or("N/A")],
+            ["S/N", self.view.battery().serial_number().unwrap_or("N/A")],
+            ["Technology", tech],
+            ["Charge state", state],
+            ["Cycles count", cycles],
         ];
         let header = ["Device", ""];
 
-        let rows = items.iter().map(|item| Row::Data(item.iter()));
-
-        Table::new(header.iter(), rows)
-            .header_style(Style::default().fg(Color::DarkGray))
-            .block(block)
-            .widths(&[17, 17])
-            .render(frame, area);
+        self.draw_info_table(header, &items, block, frame, area);
     }
 
     fn draw_energy_info<B: Backend>(&self, frame: &mut Frame<B>, area: Rect) {
@@ -260,51 +306,38 @@ impl<'i> Painter<'i> {
             State::Discharging => "Discharging with",
             _ => "Consumption",
         };
+
         let items = vec![
-            vec![consumption_label, consumption],
-            vec!["Voltage", voltage],
-            vec!["Capacity", capacity],
-            vec!["Current", current],
-            vec!["Last full", last_full],
-            vec!["Full design", full_design],
+            [consumption_label, consumption],
+            ["Voltage", voltage],
+            ["Capacity", capacity],
+            ["Current", current],
+            ["Last full", last_full],
+            ["Full design", full_design],
         ];
         let header = ["Energy", ""];
 
-        let rows = items.iter().map(|item| Row::Data(item.iter()));
-
-        Table::new(header.iter(), rows)
-            .header_style(Style::default().fg(Color::DarkGray))
-            .block(block)
-            .widths(&[17, 17])
-            .render(frame, area);
+        self.draw_info_table(header, &items, block, frame, area);
     }
 
     fn draw_timing_info<B: Backend>(&self, frame: &mut Frame<B>, area: Rect) {
         let block = Block::default().borders(Borders::LEFT | Borders::RIGHT);
         let battery = self.view.battery();
 
-        let time_to_full = match battery.time_to_full() {
+        let time_to_full = &match battery.time_to_full() {
             Some(time) => humantime::format_duration(Duration::from_secs(time.get::<second>() as u64)).to_string(),
             None => "N/A".to_string(),
         };
 
-        let time_to_empty = match battery.time_to_empty() {
+        let time_to_empty = &match battery.time_to_empty() {
             Some(time) => humantime::format_duration(Duration::from_secs(time.get::<second>() as u64)).to_string(),
             None => "N/A".to_string(),
         };
-        let items = vec![
-            vec!["Time to full", &time_to_full],
-            vec!["Time to empty", &time_to_empty],
-        ];
+
+        let items = vec![["Time to full", time_to_full], ["Time to empty", time_to_empty]];
         let header = ["Time", ""];
 
-        let rows = items.iter().map(|item| Row::Data(item.iter()));
-
-        Table::new(header.iter(), rows)
-            .header_style(Style::default().fg(Color::DarkGray))
-            .block(block)
-            .widths(&[17, 17])
-            .render(frame, area);
+        self.draw_info_table(header, &items, block, frame, area);
     }
 
     fn draw_environment_info<B: Backend>(&self, frame: &mut Frame<B>, area: Rect) {
@@ -312,23 +345,55 @@ impl<'i> Painter<'i> {
         let battery = self.view.battery();
         let config = self.view.config();
 
-        let temperature = match battery.temperature() {
+        let temperature = &match battery.temperature() {
             Some(temp) => match config.units() {
                 Units::Human => format!("{:.2} {}", temp.get::<degree_celsius>(), degree_celsius::abbreviation()),
                 Units::Si => format!("{:.2} {}", temp.get::<kelvin>(), kelvin::abbreviation()),
             },
             None => "N/A".to_string(),
         };
-        let items = vec![vec!["Temperature", &temperature]];
+
+        let items = vec![["Temperature", temperature]];
         let header = ["Environment", ""];
 
+        self.draw_info_table(header, &items, block, frame, area);
+    }
+
+    fn draw_info_table<B: Backend>(
+        &self,
+        header: [&str; 2],
+        items: &[[&str; 2]],
+        block: Block,
+        frame: &mut Frame<B>,
+        area: Rect,
+    ) {
+        // convert header and items to strings
+        let header: Vec<String> = header.iter().cloned().map(|elem| elem.to_string()).collect();
+        let items: Vec<[String; 2]> = items
+            .iter()
+            .cloned()
+            .map(|item| [item[0].to_string(), item[1].to_string()])
+            .collect();
+
+        // convert items to rows
         let rows = items.iter().map(|item| Row::Data(item.iter()));
 
+        // create table
         Table::new(header.iter(), rows)
-            .header_style(Style::default().fg(Color::DarkGray))
+            .header_style(Style::default().modifier(Modifier::BOLD))
             .block(block)
             .widths(&[17, 17])
             .render(frame, area);
+    }
+
+    fn format_section_title<'a>(&self, title: &'a mut String) -> &'a String {
+        // put formatted contents into title buffer
+        mem::swap(title, &mut format!(" {} ", &title));
+        title
+    }
+
+    fn get_section_title_style(&self) -> Style {
+        Style::default()
     }
 }
 
