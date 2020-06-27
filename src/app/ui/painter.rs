@@ -33,7 +33,6 @@
 ///            \------------------ main window -------------------------------------------/
 /// ```
 use std::borrow::Cow;
-use std::mem;
 use std::ops::Deref;
 use std::rc::Rc;
 use std::time::Duration;
@@ -134,14 +133,12 @@ impl<'i> Painter<'i> {
     }
 
     pub fn draw_tabs<B: Backend>(&self, frame: &mut Frame<B>, area: Rect) {
-        let mut title = String::from("Batteries");
-
         Tabs::default()
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .title(self.format_section_title(&mut title))
-                    .title_style(self.get_section_title_style()),
+                    .title(" Batteries ") // Note that spaces are intentional in here
+                    .title_style(Style::default()),
             )
             .titles(self.tabs.titles())
             .select(self.tabs.index())
@@ -153,12 +150,11 @@ impl<'i> Painter<'i> {
     pub fn draw_state_of_charge_bar<B: Backend>(&self, frame: &mut Frame<B>, area: Rect) {
         let value = f64::from(self.view.battery().state_of_charge().get::<ratio>());
         let value_label = f64::from(self.view.battery().state_of_charge().get::<percent>());
-        let mut title = "State of charge".to_string();
 
         // create blocks for gauge and text
         let gauge_block = Block::default()
-            .title(self.format_section_title(&mut title))
-            .title_style(self.get_section_title_style())
+            .title(" State of charge ")
+            .title_style(Style::default())
             .borders(Borders::ALL & !Borders::RIGHT);
         let text_block = Block::default().borders(Borders::ALL & !Borders::LEFT);
 
@@ -177,13 +173,13 @@ impl<'i> Painter<'i> {
             _ => Color::Red,
         };
         let text_color = match () {
-            _ if gauge_color == Color::Green => Color::White,
+            _ if gauge_color == Color::Green => Color::Gray,
             _ => gauge_color,
         };
 
         // create colored text with separator from gauge
         let text = [
-            Text::Raw(Cow::from("┃")),
+            Text::Raw(Cow::from(" ")),
             Text::Styled(
                 Cow::from(format!("{:>6.2} %\n", value_label)),
                 Style::default().fg(text_color),
@@ -204,10 +200,10 @@ impl<'i> Painter<'i> {
     }
 
     pub fn draw_chart<B: Backend>(&self, data: &ChartData, frame: &mut Frame<B>, area: Rect) {
-        let mut title = data.title().to_string();
+        let title = format!(" {} ", data.title());
         let block = Block::default()
-            .title(self.format_section_title(&mut title))
-            .title_style(self.get_section_title_style())
+            .title(&title)
+            .title_style(Style::default())
             .borders(Borders::ALL);
         let value = data.current();
         // tui automatically hides chart legend if it's height is higher than `chart.height / 3`.
@@ -235,10 +231,9 @@ impl<'i> Painter<'i> {
     }
 
     fn draw_common_info<B: Backend>(&self, frame: &mut Frame<B>, area: Rect) {
-        let mut title = "Information".to_string();
         let block = Block::default()
-            .title(self.format_section_title(&mut title))
-            .title_style(self.get_section_title_style())
+            .title(" Information ") // Note that spaces are intentional
+            .title_style(Style::default())
             .borders(Borders::LEFT | Borders::TOP | Borders::RIGHT);
 
         let tech = &format!("{}", self.view.battery().technology());
@@ -384,16 +379,6 @@ impl<'i> Painter<'i> {
             .block(block)
             .widths(&[17, 17])
             .render(frame, area);
-    }
-
-    fn format_section_title<'a>(&self, title: &'a mut String) -> &'a String {
-        // put formatted contents into title buffer
-        mem::swap(title, &mut format!(" {} ", &title));
-        title
-    }
-
-    fn get_section_title_style(&self) -> Style {
-        Style::default()
     }
 }
 
