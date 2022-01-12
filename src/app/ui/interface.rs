@@ -2,10 +2,10 @@ use std::io;
 use std::rc::Rc;
 use std::sync::Arc;
 
-use termion::input::MouseTerminal;
-use termion::raw::IntoRawMode;
-use termion::screen::AlternateScreen;
-use tui::backend::{Backend, TermionBackend};
+use crossterm::event::{DisableMouseCapture, EnableMouseCapture};
+use crossterm::execute;
+use crossterm::terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen};
+use tui::backend::{Backend, CrosstermBackend};
 use tui::Terminal;
 
 use super::{Context, Painter, TabBar, View};
@@ -16,10 +16,10 @@ use crate::Result;
 pub fn init(config: Arc<Config>, views: Vec<View>) -> Result<Interface<impl Backend>> {
     debug_assert!(!views.is_empty());
 
-    let stdout = io::stdout().into_raw_mode()?;
-    let stdout = MouseTerminal::from(stdout);
-    let stdout = AlternateScreen::from(stdout);
-    let backend = TermionBackend::new(stdout);
+    enable_raw_mode()?;
+    let mut stdout = io::stdout();
+    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
     terminal.hide_cursor()?;
 
@@ -62,5 +62,13 @@ impl<B: Backend> Interface<B> {
 
     pub fn tabs_mut(&mut self) -> &mut TabBar {
         &mut self.tabs
+    }
+}
+
+impl<B: Backend> Drop for Interface<B> {
+    fn drop(&mut self) {
+        let mut stdout = io::stdout();
+        execute!(stdout, LeaveAlternateScreen, DisableMouseCapture).unwrap();
+        disable_raw_mode().unwrap();
     }
 }
