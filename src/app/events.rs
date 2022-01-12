@@ -2,8 +2,7 @@ use std::io;
 use std::sync::mpsc;
 use std::thread;
 
-use termion::event::Key;
-use termion::input::TermRead;
+use crossterm::event::{Event as CrosstermEvent, KeyCode, KeyEvent, KeyModifiers};
 
 use crate::app::Config;
 use crate::Result;
@@ -26,21 +25,36 @@ pub struct EventHandler {
 impl EventHandler {
     pub fn from_config(config: &Config) -> EventHandler {
         let (tx, rx) = mpsc::channel();
-
+        let timeout = config.delay().clone();
         // Thread than will handle user input and send events to receiver
         let input_handle = {
             let tx = tx.clone();
             thread::spawn(move || {
                 let stdin = io::stdin();
                 trace!("Input thread spawned");
-                for possible_key in stdin.keys() {
-                    if let Ok(key) = possible_key {
+                while let Ok(_) = crossterm::event::poll(timeout) {
+                    if let Ok(CrosstermEvent::Key(key)) = crossterm::event::read() {
                         let event = match key {
-                            Key::Left => Event::PreviousTab,
-                            Key::Right => Event::NextTab,
-                            Key::Char('q') => Event::Exit,
-                            Key::Ctrl('c') => Event::Exit,
-                            Key::Esc => Event::Exit,
+                            KeyEvent {
+                                code: KeyCode::Left,
+                                modifiers: _,
+                            } => Event::PreviousTab,
+                            KeyEvent {
+                                code: KeyCode::Right,
+                                modifiers: _,
+                            } => Event::NextTab,
+                            KeyEvent {
+                                code: KeyCode::Char('q'),
+                                modifiers: _,
+                            } => Event::Exit,
+                            KeyEvent {
+                                code: KeyCode::Char('c'),
+                                modifiers: KeyModifiers::CONTROL,
+                            } => Event::Exit,
+                            KeyEvent {
+                                code: KeyCode::Esc,
+                                modifiers: _,
+                            } => Event::Exit,
                             _ => continue,
                         };
                         let is_exit = event == Event::Exit;

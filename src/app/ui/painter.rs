@@ -377,7 +377,7 @@ impl<'i> Painter<'i> {
         Table::new(header.iter(), rows)
             .header_style(Style::default().modifier(Modifier::BOLD))
             .block(block)
-            .widths(&[17, 17])
+            .widths(&[Constraint::Length(17), Constraint::Length(17)])
             .render(frame, area);
     }
 }
