@@ -1,6 +1,6 @@
 [package]
 name = "battop"
-version = "0.2.4"
+version = "0.2.5"
 authors = ["svartalf <self@svartalf.info>"]
 edition = "2018"
 description = "Interactive batteries viewer"
@@ -17,7 +17,7 @@ travis-ci = { repository = "svartalf/rust-battop", branch = "master" }
 maintenance = { status = "actively-developed" }
 
 [dependencies]
-battery = "^0.7"
+battery = "^0.7.8"
 structopt = { version = "0.2", default-features = false }
 log = "0.4.6"
 stderrlog = "0.4.1"
